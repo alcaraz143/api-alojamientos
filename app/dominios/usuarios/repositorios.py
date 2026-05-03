@@ -32,4 +32,12 @@ class UsuarioRepositorio:
         """Inserta o actualiza un perfil."""
         db.session.add(perfil)
         db.session.commit()
-        return perfil
+        return perfil 
+    
+    @staticmethod
+    def listar_todos():
+        return db.session.query(Usuario).all()
+    
+    @staticmethod
+    def actualizar_usuario():
+        db.session.commit()

@@ -35,7 +35,11 @@ def create_app():
         }, 200
 
     # Registrar blueprint de usuarios
-    from app.dominios.usuarios.controladores import usuarios_bp
+    from app.dominios.usuarios.controladores import usuarios_bp, admin_bp
+    
+    app.register_blueprint(usuarios_bp, url_prefix=f'/api/{API_VERSION}/usuarios')
+    app.register_blueprint(admin_bp, url_prefix=f'/api/{API_VERSION}/admin')
+
     from app.dominios.usuarios.servicios import UsuarioServicio
     from app.dominios.usuarios import controladores as usuarios_ctrl
 
@@ -44,8 +48,6 @@ def create_app():
         secret_key=app.config['SECRET_KEY'],
         jwt_exp_minutes=app.config.get('JWT_EXP_MINUTES', 15),
     )
-
-    app.register_blueprint(usuarios_bp, url_prefix=f'/api/{API_VERSION}/usuarios')
 
     # Manejadores globales de error
     @app.errorhandler(404)
@@ -57,11 +59,18 @@ def create_app():
         return {"success": False, "error": {"message": "Error interno del servidor"}}, 500
 
     # Manejadores de errores de dominio de usuarios
+   
+    # Manejadores de errores de dominio de usuarios
     from app.dominios.usuarios.servicios import (
         CorreoYaRegistradoError,
         CredencialesInvalidasError,
         UsuarioNoEncontradoError,
+        PermisoDenegadoError,
     )
+
+    @app.errorhandler(PermisoDenegadoError)
+    def permiso_denegado(error):
+        return {"success": False, "error": {"message": str(error)}}, 403
 
     @app.errorhandler(CorreoYaRegistradoError)
     def correo_duplicado(error):
